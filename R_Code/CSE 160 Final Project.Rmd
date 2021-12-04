@@ -29,6 +29,7 @@ data$homepage <- !(data$homepage == "")
 ```{r}
 library(caTools)
 library(ROCR)
+#This part is incorrect, needs fixing
 data$Class <- replace(data$Class, 2, 0)
 data$Class <- replace(data$Class, 4, 1)
 
