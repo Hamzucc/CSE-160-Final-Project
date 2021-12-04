@@ -26,6 +26,32 @@ data$homepage <- !(data$homepage == "")
 
 ```
 
+```{r}
+library(caTools)
+library(ROCR)
+data$Class <- replace(data$Class, 2, 0)
+data$Class <- replace(data$Class, 4, 1)
+
+split <- sample(2, nrow(data), replace = TRUE, prob = c(.8, .2))
+trainData <- data[split == 1,]
+testData <- data[split == 2,]
+#NB
+nb <- naiveBayes(formula = as.factor(Class) ~., data = trainData)
+pNB <- predict(nb, newdata = testData, type = 'raw')
+curveNB <- prediction(pNB[,2], testData$Class)
+performanceNB <- performance(curveNB, 'tpr', 'fpr')
+regressionModel <- glm(Class ~ ., data = trainData, family = "binomial")
+pred <- predict(regressionModel, testData, type = "response")
+t <-table(data.frame(testData$Class, pred > .5))
+curveLR <- prediction(pred, testData$Class)
+performanceLR <- performance(curveLR, 'tpr', 'fpr')
+plot(performanceNB, col = 1, main = "ROC")
+plot(performanceLR, col = 2, add = T)
+legend(.6,.3,c('Naive Bayes', 'Logistic Regression'), 1:2)
+
+```
+
+
 ## Including Plots
 
 You can also embed plots, for example:
