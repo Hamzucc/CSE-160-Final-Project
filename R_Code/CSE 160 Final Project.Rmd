@@ -23,7 +23,10 @@ data$popularity <- as.double(data$popularity)
 data$budget <- as.double(data$budget)
 data$belongs_to_collection <- !(data$belongs_to_collection=="")
 data$homepage <- !(data$homepage == "")
+data$genres <- gsub("[[:space:]]", "", data$genres)
 
+data$Action <- grepl('Action', data$genres, fixed = TRUE); data$Adventure <- grepl('Adventure', data$genres, fixed = TRUE); data$Animation <- grepl('Animation', data$genres, fixed = TRUE); data$Comedy <- grepl('Comedy', data$genres, fixed = TRUE); data$Crime <- grepl('Crime', data$genres, fixed = TRUE); data$Drama <- grepl('Drama', data$genres, fixed = TRUE); data$Family <- grepl('Family', data$genres, fixed = TRUE); data$Fantasy <- grepl('Fantasy', data$genres, fixed = TRUE); data$History <- grepl('History', data$genres, fixed = TRUE); data$Horror <- grepl('Horror', data$genres, fixed = TRUE); data$Music <- grepl('Music', data$genres, fixed = TRUE); data$Mystery <- grepl('Mystery', data$genres, fixed = TRUE); data$Romance <- grepl('Romance', data$genres, fixed = TRUE); data$Science_Fiction <- grepl('ScienceFiction', data$genres, fixed = TRUE); data$Thriller <- grepl('Thriller', data$genres, fixed = TRUE); data$War <- grepl('War', data$genres, fixed = TRUE); data$Western <- grepl('Western', data$genres, fixed = TRUE);
+data <- data[,-3]
 ```
 
 ```{r}
