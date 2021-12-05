@@ -73,7 +73,7 @@ You can also embed plots, for example:
 
 ```{r}
 library(ggplot2)
-revenuemodel <- lm(revenue~budget+popularity+vote_count,data = data)
+revenuemodel <- lm(revenue~budget+vote_count,data = data)
 
 summary(revenuemodel) #chose those variables because they had the highest r squared
 plot(revenuemodel)
@@ -82,7 +82,7 @@ plot(revenuemodel)
 genres1 <-c(mean(data$ratio[data$Action==TRUE]), mean(data$ratio[data$Adventure==TRUE]), mean(data$ratio[data$Animation==TRUE]), mean(data$ratio[data$Comedy==TRUE]), mean(data$ratio[data$Crime==TRUE]), mean(data$ratio[data$Drama==TRUE]), mean(data$ratio[data$Family==TRUE]), mean(data$ratio[data$Fantasy==TRUE]), mean(data$ratio[data$History==TRUE]), mean(data$ratio[data$Horror==TRUE]), mean(data$ratio[data$Music==TRUE]), mean(data$ratio[data$Mystery==TRUE]), mean(data$ratio[data$Romance==TRUE]), mean(data$ratio[data$Science_Fiction==TRUE]), mean(data$ratio[data$Thriller==TRUE]),mean(data$ratio[data$War==TRUE]), mean(data$ratio[data$War==TRUE]), mean(data$ratio[data$Western==TRUE]))
 p<-ggplot(data=data, aes(x=genres1, y=revenue)) +
   geom_bar(stat="identity")
-p
+#p
 en <- length(data$original_language[data$original_language=="en"])
 en <- (en/1344)*100
 
@@ -93,13 +93,18 @@ b <- 100 * b/nrow(data)
 b
 group <- unique((data$original_language))
 group
-ggplot(data, aes(x="", y=b, fill=group)) +
+ggplot(data, aes(x="", y=original_language, fill=group)) +
   geom_bar(stat="identity", width=1, color="white") +
   coord_polar("y", start=0) +
   
   theme_void() # remove background, grid, numeric labels
 
-
+success<-ggplot(data=data, aes(x=is_successful, y=frequency(is_successful) , fill = is_successful)) +
+  geom_bar(stat="identity") +
+xlab("Is Succesful") + 
+    ylab("# of Movies")                 +
+    ggtitle("Number of Movies that are Successful ") 
+success
 
 
 
