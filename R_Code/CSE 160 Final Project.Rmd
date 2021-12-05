@@ -213,3 +213,28 @@ cat("Tree training accuracy: ", accuracy.traintree, "\n")
 cat("Forest training accuracy: ", accuracy.trainforest, "\n")
 ```
 
+```{r}
+library(randomForest)
+library(caret)
+```
+```{r}
+#10 folds repeat 3 times
+control <- trainControl(method='repeatedcv', 
+                        number=10, 
+                        repeats=3)
+
+#Metric compare model is Accuracy
+metric <- "Accuracy"
+set.seed(123)
+
+#Number randomely variable selected is mtry
+mtry <- sqrt(ncol(data))
+tunegrid <- expand.grid(.mtry=mtry)
+rf_default <- train(revenue~budget+popularity+vote_count, 
+                      data=data, 
+                      method='rf', 
+                      metric='RMSE', 
+                      tuneGrid=tunegrid, 
+                      trControl=control)
+print(rf_default)
+```
