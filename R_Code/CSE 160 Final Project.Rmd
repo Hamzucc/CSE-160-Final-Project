@@ -38,14 +38,49 @@ data$is_successful <- (data$ratio > 4)
 ```
 Ten Fold Cross Validation:
 ```{r}
-library(caret)
-control <- trainControl(method='repeatedcv', number=10)
-model <- train(revenue~budget+popularity+vote_count, data=data, trControl=control, method="rpart")
-# make predictions
-predictions<- predict(model,data)
-predictions <- ifelse(predictions > 0.5, 1, 0)
-# summarize results
-confusionMatrix<- confusionMatrix(predictions,data$revenue)
+# Divide dataset by 10 for ten folds, start rowCount counter at 1
+partitionSize <- round(nrow(data)/10) - 1
+rowCount <- 1
+
+# Empty vectors to concatenate performance measures to
+precisionVec <- vector()
+recallVec <- vector()
+fMeasureVec <- vector()
+accuracyVec <- vector()
+for (i in 1:10) {
+  upperBound <- min(rowCount + partitionSize, nrow(data))
+  testData <- data[rowCount:upperBound,]
+  trainingData <- data[-(rowCount:upperBound),]
+  trainingData$revenue <- as.factor(trainingData$revenue)
+  
+tree <- rpart(revenue~budget+popularity+vote_count, data = trainingData, method = "class")
+
+# build decision forest
+forest <- randomForest(revenue~budget+popularity+vote_count, data = trainingData, importance = TRUE, ntree = 1000, na.action=na.roughfix)
+# plots regression
+# varImpPlot(my_forest)
+
+
+#evaluate tree and forest on training data
+tree.train <- predict(tree, newdata=testData, type="class")
+forest.train <- predict(forest, newdata=testData)
+
+table.traintree <- table(tree.train, testData$revenue)
+table.trainforest <- table(forest.train, testData$revenue)
+
+#calculate accuracies
+accuracy.traintree = sum(diag(table.traintree))/sum(table.traintree) 
+accuracy.trainforest = sum(diag(table.trainforest))/sum(table.trainforest) 
+
+cat("Tree training accuracy: ", accuracy.traintree, "\n")
+cat("Forest training accuracy: ", accuracy.trainforest, "\n")
+  
+  # Increment rowCount for next iteration
+  rowCount <- rowCount + partitionSize + 1
+}
+
+
+
 ```
 
 ```{r}
