@@ -107,3 +107,93 @@ ggplot(data, aes(x="", y=b, fill=group)) +
 
 ```
 
+Random Forest
+```{r}
+library(randomForest)
+library(rpart)
+split <- sample(2, nrow(data), replace = TRUE, prob = c(.8, .2))
+trainData <- data[split == 1,]
+testData <- data[split == 2,]
+tree <- rpart(is_successful~budget+ratio+vote_count, data = trainData, method = "class")
+
+# build decision forest
+forest <- randomForest(is_successful~budget+ratio+vote_count, data = trainData, importance = TRUE, ntree = 1000)
+# plots regression
+varImpPlot(forest)
+
+
+#evaluate tree and forest on training data
+tree.train <- predict(tree, newdata=testData, type="class")
+forest.train <- predict(forest, newdata=testData)
+
+table.traintree <- table(tree.train, testData$is_successful)
+table.trainforest <- table(forest.train, testData$is_successful)
+
+#calculate accuracies
+accuracy.traintree = sum(diag(table.traintree))/sum(table.traintree) 
+accuracy.trainforest = sum(diag(table.trainforest))/sum(table.trainforest) 
+
+cat("Tree training accuracy: ", accuracy.traintree, "\n")
+cat("Forest training accuracy: ", accuracy.trainforest, "\n")
+```
+
+Ten Fold Cross Validation:
+```{r}
+library(e1071)
+#make matrix to store values
+recall_totals <- 0
+precision_totals <- 0
+accuracy_totals <- 0
+fMeasure_totals <- 0
+
+#10-fold validation using Naive Bayes
+for (i in 1:10) {
+  m <- dim(data)[1]
+  foldLength <- round(m/10) # Create 10 folds
+  val <- c(1:foldLength) + foldLength*(i-1)
+  if (i == 10) {
+    val <- c(m-foldLength:m)
+  }
+  trainData <- data[-val, ]
+  testData <- data[val, ]
+    
+#use naive bayes to create classifier model
+  nb <- naiveBayes(is_successful~budget+vote_count+ratio, data = trainData)
+  pred <- predict(nb, newdata = testData, type = 'raw')
+  pred <- ifelse(pred > 0.5, 1, 0)
+  tab <- table(testData$is_successful, pred)
+  tab
+#define true and false positives and negatives
+  TP <- tab[1,1]
+  FP <- tab[1,2]
+  FN <- tab[2,1]
+  TN <- tab[2,2]
+    
+#calculate precision, recall, accuracy, and f-measure respectively, for the fold
+  precision <- TP/(TP+FP)
+  precision_totals <- precision_totals + precision
+    
+  recall <- TP/(TP+FN)
+  recall_totals <- recall_totals + recall
+   
+  accuracy <- (TP+TN)/(TP+TN+FP+FN)
+  accuracy_totals <- accuracy_totals + accuracy
+
+  fMeasure <- 2 * precision * recall / (precision + recall)
+  fMeasure_totals <- fMeasure_totals + fMeasure
+}
+
+#Average measures and print
+cat("\nAverage Accuracy:\n")
+accuracy_totals/10
+cat("\nAverage Precision:\n")
+precision_totals/10
+cat("\nAverage Recall:\n")
+recall_totals/10
+cat("\nAverage f-Measure:\n")
+fMeasure_totals/10
+
+
+
+```
+
