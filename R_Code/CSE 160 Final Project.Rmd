@@ -232,25 +232,28 @@ cat("Forest training accuracy: ", accuracy.trainforest, "\n")
 ```{r}
 library(randomForest)
 library(caret)
+library(ggplot2)
+library(plotROC)
 ```
 ```{r}
 #10 folds repeat 3 times
-control <- trainControl(method='repeatedcv', 
-                        number=10, 
-                        repeats=3)
+#control <- trainControl(method='repeatedcv', number=10, repeats=3)
+control <- trainControl(method='cv', number=10, summaryFunction=twoClassSummary, classProbs=T, savePredictions=T)
 
-#Metric compare model is Accuracy
-metric <- "Accuracy"
-set.seed(123)
-
-#Number randomely variable selected is mtry
-mtry <- sqrt(ncol(data))
-tunegrid <- expand.grid(.mtry=mtry)
-rf_default <- train(revenue~budget+popularity+vote_count, 
-                      data=data, 
-                      method='rf', 
-                      metric='RMSE', 
-                      tuneGrid=tunegrid, 
-                      trControl=control)
-print(rf_default)
+# Generate the model:
+data$success <- as.factor(data$is_successful)
+levels(data$success) <- c("bad", "good")
+model <- train(success ~ budget + is_English + release_date + runtime + belongs_to_collection, 
+    data=data,
+    method='rf',
+    trControl=control)
+print(model)
+```
+```{r}
+ggplot(model$pred, aes(m=good, d =obs)) + 
+  geom_roc(hjust = -0.4, vjust = 1.5) +
+  coord_equal() +
+  geom_abline(slope=1, intercept=c(0,0)) +
+  theme(title=element_text("ROC Curve of Random Forest Algorithm")) +
+  labs(x="False Positives", y="True Positives")
 ```
