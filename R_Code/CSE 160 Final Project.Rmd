@@ -36,6 +36,17 @@ data$day = as.numeric(format(data$release_date, format = "%d"));
 data$ratio <- (data$revenue/data$budget)
 data$is_successful <- (data$ratio > 4)
 ```
+Ten Fold Cross Validation:
+```{r}
+library(caret)
+control <- trainControl(method='repeatedcv', number=10)
+model <- train(revenue~budget+popularity+vote_count, data=data, trControl=control, method="rpart")
+# make predictions
+predictions<- predict(model,data)
+predictions <- ifelse(predictions > 0.5, 1, 0)
+# summarize results
+confusionMatrix<- confusionMatrix(predictions,data$revenue)
+```
 
 ```{r}
 library(caTools)
@@ -147,8 +158,7 @@ library(rpart)
 tree <- rpart(revenue~budget+popularity+vote_count, data = data, method = "class")
 
 # build decision forest
-forest <- randomForest(survived ~ pclass + fare + sex + age + embarked,
-                          data = train, importance = TRUE, ntree = 1000, na.action=na.roughfix)
+forest <- randomForest(revenue~budget+popularity+vote_count, data = data, importance = TRUE, ntree = 1000, na.action=na.roughfix)
 # plots regression
 # varImpPlot(my_forest)
 
