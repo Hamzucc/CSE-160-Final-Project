@@ -14,6 +14,7 @@ output: html_document
 ## R Markdown
 
 ```{r}
+library(ggplot2)
 data_raw <- read.csv("movies_metadata.csv")
 data_raw <- data_raw[data_raw$status=="Released",]
 data <- data_raw[data_raw$vote_count>800,-c(1, 6, 7, 9, 10, 12, 18, 19, 20, 22)]
@@ -74,66 +75,6 @@ revenuemodel <- lm(revenue~budget+popularity+vote_count,data = data)
 summary(revenuemodel) #chose those variables because they had the highest r squared
 plot(revenuemodel)
 
-revenuemodel2 <- lm(revenue~budget+vote_count,data = data)
-summary(revenuemodel2) #chose those variables because they had the highest r squared
-plot(revenuemodel2)
-
-#linearity is proved through the residual vs fitted plot. The plot is decently spread and forms a belt around the 0 line. 
-#independence is met through the data collection
-#normality is met through a majority straight line, however there may be some outliers that can influence a model.
-#equal variance is proved through the conditions met in linearity
-#randomness is met because it is a random sample
-
-#Made 2 different models with high correlation, we will use cross validation and AIC
-
-AIC(revenuemodel)
-AIC(revenuemodel2)
-
-
-#AIC tells us an estimate of prediction error and evaluates how well our model fits the data. Using aic, we find that the first model is a better model because of the lower aic value
-
-
-allIds = seq(1,1344) 
-sample1 = sample(allIds, 600) 
-test = allIds[-sample1] 
-
-model1 = data[sample1,] 
-model2 = data[test,] 
-revenuemodelsample1 = lm(revenue~budget+popularity+vote_count,data = data)
-
-revenuemodelsample2 = lm(revenue~budget+vote_count,data = data)
-
-## We can predict the training predictors using the above model
-## This is called "in-sample" prediction
-prediction1 = predict.lm(revenuemodelsample1, newdata=model1)
-prediction2 = predict.lm(revenuemodelsample2, newdata=model1)
-## plot predicted responses versus actual training responses
-plot(model1$revenue, prediction1)
-abline(a=0, b=1) # line where x = y for perfect predictions everything would lie on this line
-
-plot(model1$revenue, prediction2)
-abline(a=0, b=1) # line where x = y for perfect predictions everything would lie on this line
-plot(model1$revenue, prediction2)
-abline(a=0, b=1) # line where x = y for perfect predictions everything would lie on this line
-
-
-model1SSE1 = sum((model1$revenue - prediction1)^2)
-model1MSE1 = model1SSE1/40
-model1SSE2 = sum((model1$revenue - prediction2)^2)
-model1MSE2 = model1SSE2/40
-## Then use the testing predictors to predict testing response
-## This is called "out-of-sample" prediction
-prediction1 = predict.lm(revenuemodelsample1, newdata=model2)
-prediction2 = predict.lm(revenuemodelsample2, newdata=model2)
-plot(model2$revenue, prediction1)
-abline(a=0, b=1) # line where x = y for perfect predictions everything would lie on this line
-
-model2SSE1 = sum((model2$revenue - prediction1)^2)
-model2MSE1 = model2SSE1/13
-model2SSE2 = sum((model2$revenue - prediction2)^2)
-model2MSE2 = model2SSE2/13
-
-#To cross validate we divided our data in 2 parts to study in sample and out of sample behavior with the model we felt was best. Our model was a good predictor for the in sample and out of sample data. We can tell through the revenue and prediction plot. Our data aligns fairly strong with the line of best fit. 
 
 
 
