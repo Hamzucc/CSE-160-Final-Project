@@ -139,4 +139,32 @@ model2MSE2 = model2SSE2/13
 
 
 ```
+Random Forest
+```{r}
+library(randomForest)
+library(rpart)
+
+tree <- rpart(revenue~budget+popularity+vote_count, data = data, method = "class")
+
+# build decision forest
+forest <- randomForest(survived ~ pclass + fare + sex + age + embarked,
+                          data = train, importance = TRUE, ntree = 1000, na.action=na.roughfix)
+# plots regression
+# varImpPlot(my_forest)
+
+
+#evaluate tree and forest on training data
+tree.train <- predict(tree, newdata=train, type="class")
+forest.train <- predict(forest, newdata=train)
+
+table.traintree <- table(tree.train, train$survived)
+table.trainforest <- table(forest.train, train$survived)
+
+#calculate accuracies
+accuracy.traintree = sum(diag(table.traintree))/sum(table.traintree) 
+accuracy.trainforest = sum(diag(table.trainforest))/sum(table.trainforest) 
+
+cat("Tree training accuracy: ", accuracy.traintree, "\n")
+cat("Forest training accuracy: ", accuracy.trainforest, "\n")
+```
 
