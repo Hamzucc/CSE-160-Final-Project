@@ -38,7 +38,7 @@ data$ratio <- (data$revenue/data$budget)
 data$is_successful <- (data$ratio > 4)
 
 data$is_English <- data$original_language == "en"
-data <- data[,-c(4,9)]
+data <- data[,-c(4,10)]
 ```
 
 ```{r}
