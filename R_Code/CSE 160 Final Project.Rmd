@@ -36,6 +36,9 @@ data$day = as.numeric(format(data$release_date, format = "%d"));
 
 data$ratio <- (data$revenue/data$budget)
 data$is_successful <- (data$ratio > 4)
+
+data$is_English <- data$original_language == "en"
+data$original_language <- NULL
 ```
 
 ```{r}
