@@ -169,20 +169,23 @@ Random Forest
 ```{r}
 library(randomForest)
 library(rpart)
+library(rpart.plot)
+library(caret)
+#set.seed(4567)
 split <- sample(2, nrow(data), replace = TRUE, prob = c(.8, .2))
 trainData <- data[split == 1,]
 testData <- data[split == 2,]
-tree <- rpart(is_successful~budget+vote_count, data = trainData, method = "class")
-
+tree <- rpart(is_successful~month+budget+vote_average+belongs_to_collection+homepage+runtime, data = trainData, method = "class")
+prp(tree)
 # build decision forest
-forest <- randomForest(is_successful~budget+vote_count, data = trainData, importance = TRUE, ntree = 1000)
+forest <- randomForest(is_successful~budget+ratio+vote_average+belongs_to_collection+homepage+runtime, data = trainData, importance = TRUE, ntree = 1000)
 # plots regression
-varImpPlot(forest)
 
 
 #evaluate tree and forest on training data
 tree.train <- predict(tree, newdata=testData, type="class")
-forest.train <- predict(forest, newdata=testData)
+forest.train <- predict(forest, newdata=testData, type="class")
+#confusionMatrix(forest.train, testData$is_successful)
 
 table.traintree <- table(tree.train, testData$is_successful)
 table.trainforest <- table(forest.train, testData$is_successful)
