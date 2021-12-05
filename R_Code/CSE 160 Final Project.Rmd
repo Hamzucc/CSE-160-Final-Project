@@ -26,7 +26,7 @@ data$homepage <- !(data$homepage == "")
 data$genres <- gsub("[[:space:]]", "", data$genres)
 
 data$Action <- grepl('Action', data$genres, fixed = TRUE); data$Adventure <- grepl('Adventure', data$genres, fixed = TRUE); data$Animation <- grepl('Animation', data$genres, fixed = TRUE); data$Comedy <- grepl('Comedy', data$genres, fixed = TRUE); data$Crime <- grepl('Crime', data$genres, fixed = TRUE); data$Drama <- grepl('Drama', data$genres, fixed = TRUE); data$Family <- grepl('Family', data$genres, fixed = TRUE); data$Fantasy <- grepl('Fantasy', data$genres, fixed = TRUE); data$History <- grepl('History', data$genres, fixed = TRUE); data$Horror <- grepl('Horror', data$genres, fixed = TRUE); data$Music <- grepl('Music', data$genres, fixed = TRUE); data$Mystery <- grepl('Mystery', data$genres, fixed = TRUE); data$Romance <- grepl('Romance', data$genres, fixed = TRUE); data$Science_Fiction <- grepl('ScienceFiction', data$genres, fixed = TRUE); data$Thriller <- grepl('Thriller', data$genres, fixed = TRUE); data$War <- grepl('War', data$genres, fixed = TRUE); data$Western <- grepl('Western', data$genres, fixed = TRUE);
-data <- data[,-c(3,7,8)]
+data <- data[,-c(3,6,7,8)]
 
 data$release_date <- as.Date(data$release_date)
 data$year = as.numeric(format(data$release_date, format = "%Y"));
@@ -35,9 +35,13 @@ data$day = as.numeric(format(data$release_date, format = "%d"));
 
 data$ratio <- (data$revenue/data$budget)
 data$is_successful <- (data$ratio > 4)
+
+data$is_English <- data$original_language == "en"
+data <- data[,-c(4,9)]
 ```
 Ten Fold Cross Validation:
 ```{r}
+library(e1071)
 #make matrix to store values
 recall_totals <- 0
 precision_totals <- 0
@@ -52,12 +56,14 @@ for (i in 1:10) {
   if (i == 10) {
     val <- c(m-foldLength:m)
   }
-  training <- data[-val, ]
-  testing <- data[val, ]
+  trainData <- data[-val, ]
+  testData <- data[val, ]
     
 #use naive bayes to create classifier model
-  classifier <- naiveBayes(training[,1:11], training[,12])
-  tab <- table(predict(classifier, testing[,1:11]), testing[,12])
+  nb <- naiveBayes(is_successful~budget+vote_count+ratio, data = trainData)
+  pred <- predict(nb, newdata = testData, type = 'raw')
+  pred <- ifelse(pred > 0.5, 1, 0)
+  tab <- table(testData$is_successful, pred)
   tab
 #define true and false positives and negatives
   TP <- tab[1,1]
