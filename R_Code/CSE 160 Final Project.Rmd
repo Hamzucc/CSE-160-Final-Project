@@ -38,46 +38,56 @@ data$is_successful <- (data$ratio > 4)
 ```
 Ten Fold Cross Validation:
 ```{r}
-# Divide dataset by 10 for ten folds, start rowCount counter at 1
-partitionSize <- round(nrow(data)/10) - 1
-rowCount <- 1
+#make matrix to store values
+recall_totals <- 0
+precision_totals <- 0
+accuracy_totals <- 0
+fMeasure_totals <- 0
 
-# Empty vectors to concatenate performance measures to
-precisionVec <- vector()
-recallVec <- vector()
-fMeasureVec <- vector()
-accuracyVec <- vector()
+#10-fold validation using Naive Bayes
 for (i in 1:10) {
-  upperBound <- min(rowCount + partitionSize, nrow(data))
-  testData <- data[rowCount:upperBound,]
-  trainingData <- data[-(rowCount:upperBound),]
-  trainingData$revenue <- as.factor(trainingData$revenue)
-  
-tree <- rpart(revenue~budget+popularity+vote_count, data = trainingData, method = "class")
+  m <- dim(data)[1]
+  foldLength <- round(m/10) # Create 10 folds
+  val <- c(1:foldLength) + foldLength*(i-1)
+  if (i == 10) {
+    val <- c(m-foldLength:m)
+  }
+  training <- data[-val, ]
+  testing <- data[val, ]
+    
+#use naive bayes to create classifier model
+  classifier <- naiveBayes(training[,1:11], training[,12])
+  tab <- table(predict(classifier, testing[,1:11]), testing[,12])
+  tab
+#define true and false positives and negatives
+  TP <- tab[1,1]
+  FP <- tab[1,2]
+  FN <- tab[2,1]
+  TN <- tab[2,2]
+    
+#calculate precision, recall, accuracy, and f-measure respectively, for the fold
+  precision <- TP/(TP+FP)
+  precision_totals <- precision_totals + precision
+    
+  recall <- TP/(TP+FN)
+  recall_totals <- recall_totals + recall
+   
+  accuracy <- (TP+TN)/(TP+TN+FP+FN)
+  accuracy_totals <- accuracy_totals + accuracy
 
-# build decision forest
-forest <- randomForest(revenue~budget+popularity+vote_count, data = trainingData, importance = TRUE, ntree = 1000, na.action=na.roughfix)
-# plots regression
-# varImpPlot(my_forest)
-
-
-#evaluate tree and forest on training data
-tree.train <- predict(tree, newdata=testData, type="class")
-forest.train <- predict(forest, newdata=testData)
-
-table.traintree <- table(tree.train, testData$revenue)
-table.trainforest <- table(forest.train, testData$revenue)
-
-#calculate accuracies
-accuracy.traintree = sum(diag(table.traintree))/sum(table.traintree) 
-accuracy.trainforest = sum(diag(table.trainforest))/sum(table.trainforest) 
-
-cat("Tree training accuracy: ", accuracy.traintree, "\n")
-cat("Forest training accuracy: ", accuracy.trainforest, "\n")
-  
-  # Increment rowCount for next iteration
-  rowCount <- rowCount + partitionSize + 1
+  fMeasure <- 2 * precision * recall / (precision + recall)
+  fMeasure_totals <- fMeasure_totals + fMeasure
 }
+
+#Average measures and print
+cat("\nAverage Accuracy:\n")
+accuracy_totals/10
+cat("\nAverage Precision:\n")
+precision_totals/10
+cat("\nAverage Recall:\n")
+recall_totals/10
+cat("\nAverage f-Measure:\n")
+fMeasure_totals/10
 
 
 
