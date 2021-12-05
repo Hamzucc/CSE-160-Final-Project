@@ -101,19 +101,22 @@ library(caTools)
 library(ROCR)
 library(e1071)
 
-data <- data[,-4]
 split <- sample(2, nrow(data), replace = TRUE, prob = c(.8, .2))
 trainData <- data[split == 1,]
 testData <- data[split == 2,]
 #NB
-nb <- naiveBayes(formula = as.factor(belongs_to_collection) ~., data = trainData)
+nb <- naiveBayes(formula = as.factor(is_successful) ~ budget+homepage+runtime+is_English+vote_average+belongs_to_collection, data = trainData)
+
 pNB <- predict(nb, newdata = testData, type = 'raw')
-curveNB <- prediction(pNB[,2], testData$belongs_to_collection)
+table(data.frame(testData$is_successful, pNB > 0.5))
+curveNB <- prediction(pNB[,2], testData$is_successful)
 performanceNB <- performance(curveNB, 'tpr', 'fpr')
-regressionModel <- glm(belongs_to_collection ~ Action+Adventure+Animation+Comedy+Crime+Drama+Family+Fantasy+History+Horror+Music+Mystery+Romance+Science_Fiction+Thriller+War+Western, data = trainData, family = "binomial")
+regressionModel <- glm(is_successful ~ Action+Adventure+Animation+Comedy+Crime+Drama+Family+Fantasy+History+Horror+Music+Mystery+Romance+Science_Fiction+Thriller+War+Western, data = trainData, family = "binomial")
+
 pred <- predict(regressionModel, testData, type = "response")
-t <-table(data.frame(testData$belongs_to_collection, pred > .5))
-curveLR <- prediction(pred, testData$belongs_to_collection)
+t <-table(data.frame(testData$is_successful, pred > .5))
+
+curveLR <- prediction(pred, testData$is_successful)
 performanceLR <- performance(curveLR, 'tpr', 'fpr')
 plot(performanceNB, col = 1, main = "ROC")
 plot(performanceLR, col = 2, add = T)
