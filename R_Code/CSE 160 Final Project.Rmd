@@ -85,6 +85,7 @@ revenuemodel3 <- glm(revenue~budget+popularity+vote_count,data = data)
 summary(revenuemodel3)
 
 
+
 ```
 
 ```{r}
