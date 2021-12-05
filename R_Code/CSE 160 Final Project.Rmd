@@ -172,10 +172,10 @@ library(rpart)
 split <- sample(2, nrow(data), replace = TRUE, prob = c(.8, .2))
 trainData <- data[split == 1,]
 testData <- data[split == 2,]
-tree <- rpart(is_successful~budget+ratio+vote_count, data = trainData, method = "class")
+tree <- rpart(is_successful~budget+vote_count, data = trainData, method = "class")
 
 # build decision forest
-forest <- randomForest(is_successful~budget+ratio+vote_count, data = trainData, importance = TRUE, ntree = 1000)
+forest <- randomForest(is_successful~budget+vote_count, data = trainData, importance = TRUE, ntree = 1000)
 # plots regression
 varImpPlot(forest)
 
